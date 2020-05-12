@@ -4,6 +4,7 @@ using System.Text;
 
 namespace FdinhaServer.Entities
 {
+    [Serializable]
     public class ServerRoom
     {
         public string Name { get; set; }

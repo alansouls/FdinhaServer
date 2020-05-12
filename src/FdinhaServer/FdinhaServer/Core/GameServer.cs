@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace FdinhaServer.Core
 {
@@ -21,13 +22,20 @@ namespace FdinhaServer.Core
             _udpClient = new UdpClient(port);
             PlayersIps = new Dictionary<Player, IPEndPoint>();
             MessagesRead = new List<string>();
+            Rooms = new Dictionary<ServerRoom, MatchController>();
         }
 
         public void StartServer()
         {
             try
             {
-                _udpClient.BeginReceive(new AsyncCallback((a) => MessageReceived(a)), null);
+                var groupEP = new IPEndPoint(IPAddress.Any, 0);
+                while (true)
+                {
+                    var bytes = _udpClient.Receive(ref groupEP);
+                    var thread = new Thread(new ThreadStart(() => { MessageReceived(bytes, groupEP); }));
+                    thread.Start();
+                }
             }
             catch (SocketException e)
             {
@@ -35,12 +43,10 @@ namespace FdinhaServer.Core
             }
         }
 
-        private void MessageReceived(IAsyncResult a)
+        private void MessageReceived(byte[] bytes, IPEndPoint groupEP)
         {
             try
             {
-                IPEndPoint groupEP = new IPEndPoint(IPAddress.Any, 0);
-                var bytes = _udpClient.EndReceive(a, ref groupEP);
                 var json = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
 
                 var message = JsonConvert.DeserializeObject<MessageModel>(json);
