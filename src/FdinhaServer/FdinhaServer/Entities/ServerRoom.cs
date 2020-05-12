@@ -13,4 +13,10 @@ namespace FdinhaServer.Entities
 
         public bool Open { get; set; }
     }
+
+    [Serializable]
+    public class ServerList
+    {
+        public ServerRoom[] ServerRooms;
+    }
 }

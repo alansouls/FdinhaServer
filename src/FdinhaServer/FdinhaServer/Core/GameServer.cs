@@ -23,6 +23,28 @@ namespace FdinhaServer.Core
             PlayersIps = new Dictionary<Player, IPEndPoint>();
             MessagesRead = new List<string>();
             Rooms = new Dictionary<ServerRoom, MatchController>();
+#if (DEBUG)
+            Rooms.Add(new ServerRoom
+            {
+                Name = "Debug Room 1",
+                Open = true,
+                Password = "1234"
+            },
+            new MatchController(this));
+            Rooms.Add(new ServerRoom
+            {
+                Name = "Debug Room 2",
+                Open = true,
+                Password = "1234"
+            }, new MatchController(this));
+            Rooms.Add(new ServerRoom
+            {
+                Name = "Debug Room 3",
+                Open = true,
+                Password = "1234"
+            },
+            new MatchController(this));
+#endif
         }
 
         public void StartServer()
@@ -48,7 +70,13 @@ namespace FdinhaServer.Core
             try
             {
                 var json = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
-
+                if (json == "GET_ROOMS")
+                {
+                    var response = JsonConvert.SerializeObject(new ServerList { ServerRooms = Rooms.Keys.ToArray() });
+                    var rspBytes = Encoding.UTF8.GetBytes(response);
+                    _udpClient.Send(rspBytes, rspBytes.Length, groupEP);
+                    return;
+                }
                 var message = JsonConvert.DeserializeObject<MessageModel>(json);
                 if (!MessagesRead.Contains(message.MessageId))
                     HandleMessage(message, groupEP);
@@ -56,10 +84,6 @@ namespace FdinhaServer.Core
             catch (Exception e)
             {
                 Console.WriteLine($"Error receiving message, exception message: ({e.Message})");
-            }
-            finally
-            {
-                StartServer();
             }
         }
 
