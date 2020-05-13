@@ -51,9 +51,11 @@ namespace FdinhaServer.Core
         {
             try
             {
+                Console.WriteLine("Server started!");
                 var groupEP = new IPEndPoint(IPAddress.Any, 0);
                 while (true)
                 {
+                    Console.WriteLine("Waiting for message...");
                     var bytes = _udpClient.Receive(ref groupEP);
                     var thread = new Thread(new ThreadStart(() => { MessageReceived(bytes, groupEP); }));
                     thread.Start();
@@ -61,22 +63,28 @@ namespace FdinhaServer.Core
             }
             catch (SocketException e)
             {
+                Console.WriteLine("Server closed due to exception:\n");
                 Console.WriteLine(e.Message);
+                _udpClient.Close();
             }
         }
 
         private void MessageReceived(byte[] bytes, IPEndPoint groupEP)
         {
+            Console.WriteLine($"Message arrived from {groupEP}");
             try
             {
                 var json = Encoding.UTF8.GetString(bytes, 0, bytes.Length);
                 if (json == "GET_ROOMS")
                 {
+                    Console.WriteLine("Requested for rooms");
                     var response = JsonConvert.SerializeObject(new ServerList { ServerRooms = Rooms.Keys.ToArray() });
                     var rspBytes = Encoding.UTF8.GetBytes(response);
                     _udpClient.Send(rspBytes, rspBytes.Length, groupEP);
+                    Console.WriteLine("Rooms sent");
                     return;
                 }
+                Console.Write("Game message");
                 var message = JsonConvert.DeserializeObject<MessageModel>(json);
                 if (!MessagesRead.Contains(message.MessageId))
                     HandleMessage(message, groupEP);
@@ -84,6 +92,7 @@ namespace FdinhaServer.Core
             catch (Exception e)
             {
                 Console.WriteLine($"Error receiving message, exception message: ({e.Message})");
+                _udpClient.Close();
             }
         }
 
@@ -95,21 +104,27 @@ namespace FdinhaServer.Core
             switch (message.Action.Action)
             {
                 case Entities.Action.ADD_PLAYER:
+                    Console.WriteLine("Message with action ADD_PLAYER");
                     AddPlayer(action, groupEP, match);
                     break;
                 case Entities.Action.GUESS:
+                    Console.WriteLine("Message with action GUESS");
                     Guess(action, groupEP, match);
                     break;
                 case Entities.Action.PASS:
+                    Console.WriteLine("Message with action PASS");
                     Pass(action, groupEP, match);
                     break;
                 case Entities.Action.PLAY_CARD:
+                    Console.WriteLine("Message with action PLAY_CARD");
                     PlayCard(action, groupEP, match);
                     break;
                 case Entities.Action.START_GAME:
+                    Console.WriteLine("Message with action START_GAME");
                     StartGame(action, groupEP, match);
                     break;
                 case Entities.Action.CREATE_ROOM:
+                    Console.WriteLine("Message with action CREATE_ROOM");
                     CreateRoom(action, groupEP);
                     break;
             }
@@ -155,6 +170,7 @@ namespace FdinhaServer.Core
                     Message = $"Exception thrown on server, send this message to support: ({e.Message})"
                 }, groupEP);
                 Console.WriteLine(e.Message);
+                _udpClient.Close();
             }
         }
 

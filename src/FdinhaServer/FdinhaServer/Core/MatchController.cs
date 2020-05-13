@@ -26,14 +26,7 @@ namespace FdinhaServer.Core
         public MatchController(GameServer server)
         {
             GameServer = server;
-        }
-
-        // Start is called before the first frame update
-        void Start()
-        {
             Random = new System.Random();
-            GameServer = new GameServer(8965);
-            GameServer.StartServer();
             Table = new Stack<Card>();
             Cards = new Stack<Card>();
             Players = new List<Player>();
@@ -42,7 +35,6 @@ namespace FdinhaServer.Core
             MaxRound = 3;
             IsGuessing = false;
             GenerateCards();
-            //GetAllPlayers();
         }
 
         public void AddPlayer(Player player)
