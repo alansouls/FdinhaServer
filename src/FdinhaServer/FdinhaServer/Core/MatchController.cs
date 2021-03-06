@@ -55,7 +55,7 @@ namespace FdinhaServer.Core
             Players.Remove(newPlayer);
             Players.Add(newPlayer);
 
-            if (player == LastPlayer || Players.Where(p => p.Cards.Count > 0).Count() == 1)
+            if (player == LastPlayer || Players.Where(p => p.Cards?.Count > 0).Count() == 1)
             {
                 PlaceCardInTable(player, card);
                 AddWinToWinningPlayer();

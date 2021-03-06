@@ -9,7 +9,7 @@ namespace FdinhaServer.Entities
         public bool Valid;
         public int Lives;
         public string Name;
-        public List<Card> Cards = new List<Card>();
+        public List<Card> Cards;
         public string Id;
 
         public override bool Equals(object obj)
