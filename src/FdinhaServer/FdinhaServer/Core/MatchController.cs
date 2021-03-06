@@ -258,7 +258,9 @@ namespace FdinhaServer.Core
         private Player PreviousPlayer(Player player)
         {
             var playingPlayers = Players.Where(p => p.Cards.Count > 0).ToList();
-            return playingPlayers.ElementAtOrDefault(playingPlayers.IndexOf(player) - 1).Valid ? playingPlayers.ElementAtOrDefault(playingPlayers.IndexOf(player) - 1) : playingPlayers.Last();
+            var index = playingPlayers.IndexOf(player) - 1;
+            index = index >= 0 ? index : 0;
+            return playingPlayers.ElementAtOrDefault(index).Valid ? playingPlayers.ElementAtOrDefault(index) : playingPlayers.Last();
         }
 
         private void DistributeCards()
