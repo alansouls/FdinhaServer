@@ -21,7 +21,7 @@ namespace FdinhaServer.Core
         public IDictionary<Player, int> Wins;
         public GameServer GameServer;
         public List<Card> CardsGone;
-        public System.Random Random;
+        public Random Random;
 
         public MatchController(GameServer server)
         {
@@ -32,6 +32,7 @@ namespace FdinhaServer.Core
             Players = new List<Player>();
             Wins = new Dictionary<Player, int>();
             Guesses = new Dictionary<Player, int>();
+            CardsGone = new List<Card>();
             MaxRound = 3;
             IsGuessing = false;
             GenerateCards();
