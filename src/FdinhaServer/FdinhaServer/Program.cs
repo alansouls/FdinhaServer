@@ -8,7 +8,7 @@ namespace FdinhaServer
         static void Main(string[] args)
         {
             Console.WriteLine("Starting Server ...");
-            var server = new GameServer(8965);
+            using var server = new GameServer(8965);
             server.StartServer();
         }
     }

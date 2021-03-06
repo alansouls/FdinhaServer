@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace FdinhaServer.Core
 {
-    public class GameServer
+    public class GameServer : IDisposable
     {
         private readonly UdpClient _udpClient;
         private readonly int listenPort;
@@ -256,6 +256,11 @@ namespace FdinhaServer.Core
         public void Close()
         {
             _udpClient.Close();
+        }
+
+        public void Dispose()
+        {
+            _udpClient.Dispose();
         }
 
         public Dictionary<Player, IPEndPoint> PlayersIps;
