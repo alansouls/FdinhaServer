@@ -55,30 +55,10 @@ namespace FdinhaServer.Core
             Players.Remove(newPlayer);
             Players.Add(newPlayer);
 
-            var maxLives = Players.Max(p => p.Lives);
-            var onlyOneHasMaxLives = Players.Where(p => p.Lives == maxLives).Count() == 1;
-            var onlyOneHasCards = Players.Where(p => p.Cards.Count > 0).Count() == 1;
-
-            if (player == LastPlayer || (onlyOneHasMaxLives && onlyOneHasCards))
+            if (player == LastPlayer)
             {
                 PlaceCardInTable(player, card);
-                AddWinToWinningPlayer();
-                CurrentPlayer = new Player();
-                GameServer.UpdateGameState(this);
-                Thread.Sleep(500);
-                CardsGone = Table.ToList();
-                Table.Clear();
-                GameServer.UpdateGameState(this);
-                Thread.Sleep(500);
-                CurrentPlayer = WinningPlayer;
-                LastPlayer = PreviousPlayer(CurrentPlayer);
-                if (!Players.Where(p => p.Cards.Count > 0).Any())
-                {
-                    RemoveLives();
-                    StartRound();
-                }
-                GameServer.UpdateGameState(this);
-                Thread.Sleep(500);
+                NextRound();
             }
             else
             {
@@ -95,9 +75,32 @@ namespace FdinhaServer.Core
             }
         }
 
+        private void NextRound()
+        {
+            AddWinToWinningPlayer();
+            CurrentPlayer = new Player();
+            GameServer.UpdateGameState(this);
+            Thread.Sleep(500);
+            CardsGone = Table.ToList();
+            Table.Clear();
+            GameServer.UpdateGameState(this);
+            Thread.Sleep(500);
+            CurrentPlayer = WinningPlayer;
+            LastPlayer = PreviousPlayer(CurrentPlayer);
+            if (!Players.Where(p => p.Cards.Count > 0).Any())
+            {
+                RemoveLives();
+                StartRound();
+            }
+            GameServer.UpdateGameState(this);
+            Thread.Sleep(500);
+        }
+
         public void Pass(Player player)
         {
-            if (player.Cards.Count <= 0)
+            if (player == LastPlayer)
+                NextRound();
+            else if (player.Cards.Count <= 0)
                 CurrentPlayer = NextPlayer(player);
             else
                 CurrentPlayer = player;
