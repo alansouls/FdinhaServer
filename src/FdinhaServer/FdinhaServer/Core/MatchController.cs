@@ -52,8 +52,7 @@ namespace FdinhaServer.Core
         {
             var newPlayer = Players.Where(p => p.Id == player.Id).FirstOrDefault();
             newPlayer.Cards = player.Cards;
-            Players.Remove(newPlayer);
-            Players.Add(newPlayer);
+            UpdatePlayer(newPlayer);
 
             if (player == LastPlayer)
             {
@@ -73,6 +72,13 @@ namespace FdinhaServer.Core
                 GameServer.UpdateGameState(this);
                 Thread.Sleep(500);
             }
+        }
+
+        private void UpdatePlayer(Player player)
+        {
+            var index = Players.IndexOf(player);
+            Players.Remove(player);
+            Players.Insert(index, player);
         }
 
         private void NextRound()
@@ -167,8 +173,7 @@ namespace FdinhaServer.Core
                 if (wins != guess)
                 {
                     newPlayer.Lives -= 1;
-                    Players.Remove(newPlayer);
-                    Players.Add(newPlayer);
+                    UpdatePlayer(newPlayer);
                 }
             }
         }
@@ -192,8 +197,7 @@ namespace FdinhaServer.Core
                 var newPlayer = player;
                 newPlayer.Lives = 3;
                 newPlayer.Cards.Clear();
-                Players.Remove(newPlayer);
-                Players.Add(newPlayer);
+                UpdatePlayer(newPlayer);
             }
         }
 
