@@ -55,7 +55,7 @@ namespace FdinhaServer.Core
             Players.Remove(newPlayer);
             Players.Add(newPlayer);
 
-            if (player == LastPlayer)
+            if (player == LastPlayer || Players.Where(p => p.Cards.Count > 0).Count() == 1)
             {
                 PlaceCardInTable(player, card);
                 AddWinToWinningPlayer();
@@ -257,10 +257,7 @@ namespace FdinhaServer.Core
 
         private Player PreviousPlayer(Player player)
         {
-            var playingPlayers = Players.Where(p => p.Cards.Count > 0).ToList();
-            var index = playingPlayers.IndexOf(player) - 1;
-            index = index >= 0 ? index : 0;
-            return playingPlayers.ElementAtOrDefault(index).Valid ? playingPlayers.ElementAtOrDefault(index) : playingPlayers.Last();
+            return Players.ElementAtOrDefault(Players.IndexOf(player) - 1).Valid ? Players.ElementAtOrDefault(Players.IndexOf(player) - 1) : Players.Last();
         }
 
         private void DistributeCards()
