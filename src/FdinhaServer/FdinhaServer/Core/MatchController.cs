@@ -55,7 +55,11 @@ namespace FdinhaServer.Core
             Players.Remove(newPlayer);
             Players.Add(newPlayer);
 
-            if (player == LastPlayer || Players.Where(p => p.Cards?.Count > 0).Count() == 1)
+            var maxLives = Players.Max(p => p.Lives);
+            var onlyOneHasMaxLives = Players.Where(p => p.Lives == maxLives).Count() == 1;
+            var onlyOneHasCards = Players.Where(p => p.Cards.Count > 0).Count() == 1;
+
+            if (player == LastPlayer || (onlyOneHasMaxLives && onlyOneHasCards))
             {
                 PlaceCardInTable(player, card);
                 AddWinToWinningPlayer();
