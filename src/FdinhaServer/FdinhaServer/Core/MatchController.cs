@@ -180,13 +180,10 @@ namespace FdinhaServer.Core
 
         private void ResetDeck()
         {
-            while (Table.Count > 0)
-                Cards.Push(Table.Pop());
-            foreach (var card in CardsGone)
-            {
-                Cards.Push(card);
-            }
+            Table.Clear();
             CardsGone.Clear();
+            Cards.Clear();
+            GenerateCards();
             ShuffleDeck();
         }
 
