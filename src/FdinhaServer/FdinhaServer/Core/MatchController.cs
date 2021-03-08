@@ -19,11 +19,11 @@ namespace FdinhaServer.Core
         public Player LastPlayer;
         public IDictionary<Player, int> Guesses;
         public IDictionary<Player, int> Wins;
-        public GameServer GameServer;
+        public IGameServer GameServer;
         public List<Card> CardsGone;
         public Random Random;
 
-        public MatchController(GameServer server)
+        public MatchController(IGameServer server)
         {
             GameServer = server;
             Random = new System.Random();
@@ -41,11 +41,6 @@ namespace FdinhaServer.Core
         public void AddPlayer(Player player)
         {
             Players.Add(player);
-        }
-
-        public void OnDestroy()
-        {
-            GameServer.Close();
         }
 
         public void PlayCard(Player player, Card card)
