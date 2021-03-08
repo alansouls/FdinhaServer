@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace FdinhaServer.Core
 {
-    public class GameServer : IDisposable
+    public class GameServer : AbstractGameServer,  IDisposable, IGameServer
     {
         private readonly UdpClient _udpClient;
         private readonly int listenPort;
@@ -47,7 +47,7 @@ namespace FdinhaServer.Core
 #endif
         }
 
-        public void StartServer()
+        public override void StartServer()
         {
             try
             {
@@ -96,44 +96,23 @@ namespace FdinhaServer.Core
             }
         }
 
-        public void HandleMessage(MessageModel message, IPEndPoint groupEP)
+        private void SendResponseCreateRoomMessage(CreateRoomResponseMessage message, IPEndPoint endPoint)
         {
-            MessagesRead.Add(message.MessageId);
+            var dgram = GetMessageBytes(message);
+            _udpClient.Send(dgram, dgram.Length, endPoint);
+        }
+
+        public override void HandleMessage(MessageModel message, IPEndPoint groupEP)
+        {
+            base.HandleMessage(message, groupEP);
             var action = message.Action;
-            var match = Rooms.Where(r => r.Key.Name == action.Room.Name && r.Key.Password == action.Room.Password).FirstOrDefault().Value;
             switch (message.Action.Action)
             {
-                case Entities.Action.ADD_PLAYER:
-                    Console.WriteLine("Message with action ADD_PLAYER");
-                    AddPlayer(action, groupEP, match);
-                    break;
-                case Entities.Action.GUESS:
-                    Console.WriteLine("Message with action GUESS");
-                    Guess(action, groupEP, match);
-                    break;
-                case Entities.Action.PASS:
-                    Console.WriteLine("Message with action PASS");
-                    Pass(action, groupEP, match);
-                    break;
-                case Entities.Action.PLAY_CARD:
-                    Console.WriteLine("Message with action PLAY_CARD");
-                    PlayCard(action, groupEP, match);
-                    break;
-                case Entities.Action.START_GAME:
-                    Console.WriteLine("Message with action START_GAME");
-                    StartGame(action, groupEP, match);
-                    break;
                 case Entities.Action.CREATE_ROOM:
                     Console.WriteLine("Message with action CREATE_ROOM");
                     CreateRoom(action, groupEP);
                     break;
             }
-        }
-
-        private void SendResponseCreateRoomMessage(CreateRoomResponseMessage message, IPEndPoint endPoint)
-        {
-            var dgram = GetMessageBytes(message);
-            _udpClient.Send(dgram, dgram.Length, endPoint);
         }
 
         private void CreateRoom(ActionObject action, IPEndPoint groupEP)
@@ -174,40 +153,7 @@ namespace FdinhaServer.Core
             }
         }
 
-        private void StartGame(ActionObject action, IPEndPoint groupEP, MatchController match)
-        {
-            match.StartGame();
-        }
-
-        public void AddPlayer(ActionObject action, IPEndPoint groupEP, MatchController match)
-        {
-            match.AddPlayer(action.Player);
-            PlayersIps.Add(action.Player, groupEP);
-            UpdateGameState(match);
-        }
-
-        public void Guess(ActionObject action, IPEndPoint groupEP, MatchController match)
-        {
-            if (action.Player != match.CurrentPlayer)
-                return;
-            match.Guess(action.Player, action.Guess);
-        }
-
-        public void Pass(ActionObject action, IPEndPoint groupEP, MatchController match)
-        {
-            if (action.Player != match.CurrentPlayer)
-                return;
-            match.Pass(action.Player);
-        }
-
-        public void PlayCard(ActionObject action, IPEndPoint groupEP, MatchController match)
-        {
-            if (action.Player != match.CurrentPlayer)
-                return;
-            match.PlayCard(action.Player, action.Card);
-        }
-
-        public void UpdateGameState(MatchController match)
+        public override void UpdateGameState(MatchController match)
         {
             foreach (var p in PlayersIps.Keys)
             {
@@ -262,9 +208,5 @@ namespace FdinhaServer.Core
         {
             _udpClient.Dispose();
         }
-
-        public Dictionary<Player, IPEndPoint> PlayersIps;
-        public Dictionary<ServerRoom, MatchController> Rooms;
-        public List<string> MessagesRead { get; set; }
     }
 }
